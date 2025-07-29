@@ -77,6 +77,6 @@ def send_output(path):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="HunyuanWorld API Server")
-    parser.add_argument("--port", type=int, default=8080, help="Port to run the server on")
+    parser.add_argument("--port", type=int, default=8000, help="Port to run the server on")
     args = parser.parse_args()
     app.run(host='0.0.0.0', port=args.port)
