@@ -7,7 +7,7 @@ import os
 
 # --- Configuration ---
 # You'll need to replace this with your RunPod API endpoint
-RUNPOD_API_URL = "http://205.196.17.28:8000/generate" 
+RUNPOD_API_URL = "http://205.196.17.28:10823/generate" 
 
 def create_interface():
     with gr.Blocks(theme=gr.themes.Soft()) as demo:
@@ -101,8 +101,40 @@ def test_connection():
         return f"An error occurred: {e}"
 
 def text_to_world(prompt, negative_prompt, labels_fg1, labels_fg2, resolution, classes, seed, use_sr, export_drc):
-    # This function will be more complex, for now, it's a placeholder
-    return None, None, "Text-to-World generation is not yet implemented."
+    if not prompt:
+        return None, None, "Please enter a prompt."
+
+    data = {
+        'prompt': prompt,
+        'negative_prompt': negative_prompt,
+        'labels_fg1': labels_fg1.split(','),
+        'labels_fg2': labels_fg2.split(','),
+        'resolution': resolution,
+        'classes': classes,
+        'seed': seed,
+        'use_sr': use_sr,
+        'export_drc': export_drc
+    }
+
+    try:
+        response = requests.post(RUNPOD_API_URL, data=data, timeout=600) # Increased timeout for text-gen
+        response.raise_for_status()
+        
+        result = response.json()
+        
+        files = result.get('files', [])
+        panorama_url = result.get('panorama_image_url')
+
+        # Construct the full URL for the panorama image
+        base_url = RUNPOD_API_URL.rsplit('/', 1)[0]
+        full_panorama_url = f"{base_url}{panorama_url}" if panorama_url else None
+        
+        return full_panorama_url, files, f"Generation successful. Files: {', '.join(files)}"
+
+    except requests.exceptions.RequestException as e:
+        return None, None, f"Error connecting to the RunPod API: {e}"
+    except Exception as e:
+        return None, None, f"An error occurred: {e}"
 
 
 def image_to_world(image, prompt, negative_prompt, labels_fg1, labels_fg2, resolution, classes, seed, use_sr, export_drc):
