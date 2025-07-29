@@ -7,11 +7,15 @@ import os
 
 # --- Configuration ---
 # You'll need to replace this with your RunPod API endpoint
-RUNPOD_API_URL = "http://localhost:8080/generate" 
+RUNPOD_API_URL = "http://205.196.17.28:8000/generate" 
 
 def create_interface():
     with gr.Blocks(theme=gr.themes.Soft()) as demo:
         gr.Markdown("# HunyuanWorld-1.0 Gradio UI")
+
+        with gr.Row():
+            test_button = gr.Button("Test Connection")
+            test_status = gr.Textbox(label="Connection Status", interactive=False)
 
         with gr.Tabs():
             with gr.TabItem("Text-to-World"):
@@ -78,8 +82,23 @@ def create_interface():
                     inputs=[input_image, img_prompt, img_negative_prompt, img_labels_fg1, img_labels_fg2, img_resolution, img_classes, img_seed, img_use_sr, img_export_drc],
                     outputs=[img_output_image, img_output_files, img_status]
                 )
+        
+        test_button.click(
+            fn=test_connection,
+            outputs=[test_status]
+        )
 
     return demo
+
+def test_connection():
+    try:
+        response = requests.get(RUNPOD_API_URL.replace("/generate", "/test"), timeout=10)
+        response.raise_for_status()
+        return response.json().get('message', 'Connection successful!')
+    except requests.exceptions.RequestException as e:
+        return f"Error connecting to the RunPod API: {e}"
+    except Exception as e:
+        return f"An error occurred: {e}"
 
 def text_to_world(prompt, negative_prompt, labels_fg1, labels_fg2, resolution, classes, seed, use_sr, export_drc):
     # This function will be more complex, for now, it's a placeholder

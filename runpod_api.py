@@ -71,6 +71,10 @@ def generate():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@app.route('/test', methods=['GET'])
+def test():
+    return jsonify({'message': 'Connection to RunPod API successful!'})
+
 @app.route('/output/<path:path>')
 def send_output(path):
     return send_from_directory('output', path)
